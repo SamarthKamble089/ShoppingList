@@ -33,8 +33,8 @@ A Windows Desktop GUI Application built in C using the Win32 API. BudgetBrake he
    ```
 2. Run the generated `BudgetBrake.exe` file.
 3. Login using the default credentials. 
-   - *Example User 1*: `samarth` / Password: `1rz25cs152`
-   - *Example User 2*: `krithika` / Password: `1rz25cs145`
+   - *Example User 1*: `samarth` / Password: `<USN all small letters>`
+   - *Example User 2*: `krithika` / Password: `<USN all small letters>`
 
 ## Managing Items
 
