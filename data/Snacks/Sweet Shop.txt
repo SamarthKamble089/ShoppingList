@@ -1,5 +1,5 @@
-Chocolate,100
-Chips,50
+Chocolate,45
+Chips,20
 Ladoo,150
 Barfi,200
-Jalebi,120
+Jalebi,60

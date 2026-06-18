@@ -1,4 +1,4 @@
-Jeans,1299
+Jeans,999
 Jacket,1999
 Dress,1499
 T-Shirt,399

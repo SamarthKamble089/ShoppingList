@@ -1,5 +1,5 @@
 Potato,30
-Milk,60
+Milk,50
 Bread,45
 Butter,55
 Cheese,120
