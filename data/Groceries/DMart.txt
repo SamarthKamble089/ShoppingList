@@ -1,0 +1,5 @@
+Onion,50
+Tomato,40
+Rice,120
+Dal,90
+Sugar,45

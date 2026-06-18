@@ -1,0 +1,5 @@
+Jeans,1299
+Jacket,1999
+Dress,1499
+T-Shirt,399
+Shorts,499

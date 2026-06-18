@@ -1,0 +1,5 @@
+Biriyani,250
+Chapati,20
+Paneer,180
+Chicken Curry,200
+Lassi,50

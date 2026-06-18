@@ -1,0 +1,5 @@
+Dosa,80
+Burger,120
+Pizza,250
+Pasta,150
+Garlic Bread,99

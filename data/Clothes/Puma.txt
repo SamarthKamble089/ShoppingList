@@ -1,0 +1,5 @@
+T-Shirt,499
+Shoes,2499
+Trackpants,999
+Socks,199
+Jacket,1499
