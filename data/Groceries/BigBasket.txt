@@ -1,0 +1,5 @@
+Onion,40
+Potato,30
+Tomato,50
+Carrot,60
+Capsicum,80

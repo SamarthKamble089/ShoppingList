@@ -1,0 +1,5 @@
+Soap,40
+Shampoo,150
+Toothpaste,80
+Detergent,120
+Cleaner,90

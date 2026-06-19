@@ -1,0 +1,5 @@
+Crunchwrap,150
+Tacos,100
+Burrito,180
+Nachos,120
+Quesadilla,140

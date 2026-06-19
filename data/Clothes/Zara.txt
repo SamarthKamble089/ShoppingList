@@ -1,0 +1,5 @@
+Blazer,4999
+Trousers,2499
+Perfume,1299
+Formal Shirt,1999
+Boots,3999

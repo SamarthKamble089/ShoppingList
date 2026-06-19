@@ -1,0 +1,5 @@
+Zinger Burger,180
+Fried Chicken,250
+Popcorn Chicken,120
+Chicken Wings,150
+Krushers,90

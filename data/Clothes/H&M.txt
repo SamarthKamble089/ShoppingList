@@ -1,0 +1,5 @@
+Hoodie,1999
+Chinos,1499
+Dress,2499
+Sweater,1799
+Scarf,499

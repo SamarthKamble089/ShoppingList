@@ -1,0 +1,5 @@
+Veg Puff,20
+Chocolate Cake,350
+Cream Roll,15
+Breadsticks,40
+Muffins,50

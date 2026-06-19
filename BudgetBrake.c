@@ -32,6 +32,7 @@ struct User {
     int budget;
     struct Log history[50]; 
     int history_count;      
+    int shop_spent[4][10];
 };
 
 struct Category categories[4];
@@ -74,6 +75,8 @@ HBRUSH hInputBrush;  // Slightly lighter blue for text boxes & cart
 
 #define ID_BTN_SAVE_PROF   30
 #define ID_BTN_CLEAR_HISTORY 31
+#define ID_BTN_GRAPHS      32
+#define ID_COMBO_GRAPH_CAT 33
 
 // ==========================================
 // UI HANDLES
@@ -82,13 +85,17 @@ HWND hAppTitle;
 HFONT hTitleFont; 
 
 HWND hLblUser, hUsername, hLblPass, hPass, hBtnLogin, hBtnQuit, hLoginTitle; 
-HWND hBtnCat[4], hBtnCheckout, hBtnProfile, hBtnLogout, hBtnHistory;
+HWND hBtnCat[4], hBtnCheckout, hBtnProfile, hBtnLogout, hBtnHistory, hBtnGraphs;
 HWND hCartList, hLblBudget, hLblCartTotal, hCartTitle, hBtnClearCart, hBtnRemoveItem;
 HWND hCatTitle, hLblShop, hComboShops, hLblSelect, hComboItems, hLblItemName, hTxtItemName, hLblItemPrice, hTxtItemPrice, hLblItemQty, hTxtItemQty, hBtnAddToCart;
 int cart_item_prices[100];
+int cart_item_cat_idx[100];
+int cart_item_shop_idx[100];
 int cart_items_count = 0;
 HWND hProfTitle, hProfUser, hLblNewPass, hTxtNewPass, hLblNewBudg, hTxtNewBudg, hBtnSaveProf;
 HWND hHistoryTitle, hHistoryList, hBtnClearHistory;
+HWND hGraphTitle, hComboGraphCat, hGraphArea;
+int current_graph_cat_idx = 0;
 
 // ==========================================
 // DATA INITIALIZATION
@@ -195,6 +202,76 @@ void load_user_history() {
     }
 }
 
+void save_user_stats(int user_idx) {
+    char filepath[100];
+    sprintf(filepath, "data/shop_stats_%s.txt", users[user_idx].uname);
+    FILE *file = fopen(filepath, "w");
+    if (file) {
+        for(int c=0; c<4; c++) {
+            for(int s=0; s<10; s++) {
+                if (users[user_idx].shop_spent[c][s] > 0) {
+                    fprintf(file, "%d,%d,%d\n", c, s, users[user_idx].shop_spent[c][s]);
+                }
+            }
+        }
+        fclose(file);
+    }
+}
+
+void load_user_stats() {
+    for (int i = 0; i < 2; i++) {
+        for (int c=0; c<4; c++) {
+            for (int s=0; s<10; s++) {
+                users[i].shop_spent[c][s] = 0;
+            }
+        }
+        char filepath[100];
+        sprintf(filepath, "data/shop_stats_%s.txt", users[i].uname);
+        FILE *file = fopen(filepath, "r");
+        if (file) {
+            char line[150];
+            while (fgets(line, sizeof(line), file)) {
+                int cat, shop, amount;
+                if (sscanf(line, "%d,%d,%d", &cat, &shop, &amount) == 3) {
+                    if (cat >= 0 && cat < 4 && shop >= 0 && shop < 10) {
+                        users[i].shop_spent[cat][shop] = amount;
+                    }
+                }
+            }
+            fclose(file);
+        }
+    }
+}
+
+void save_user_profile(int user_idx) {
+    char filepath[100];
+    sprintf(filepath, "data/user_profile_%s.txt", users[user_idx].uname);
+    FILE *file = fopen(filepath, "w");
+    if (file) {
+        fprintf(file, "%s\n%d\n", users[user_idx].password, users[user_idx].budget);
+        fclose(file);
+    }
+}
+
+void load_user_profiles() {
+    for (int i = 0; i < 2; i++) {
+        char filepath[100];
+        sprintf(filepath, "data/user_profile_%s.txt", users[i].uname);
+        FILE *file = fopen(filepath, "r");
+        if (file) {
+            char pass[50];
+            int budg;
+            if (fscanf(file, "%49s", pass) == 1) {
+                if (fscanf(file, "%d", &budg) == 1) {
+                    strcpy(users[i].password, pass);
+                    users[i].budget = budg;
+                }
+            }
+            fclose(file);
+        }
+    }
+}
+
 void initialize_data() {
     strcpy(users[0].uname, "samarth");
     strcpy(users[0].password, "1rz25cs152");
@@ -208,6 +285,8 @@ void initialize_data() {
 
     load_categories_from_files();
     load_user_history();
+    load_user_stats();
+    load_user_profiles();
 }
 
 // ==========================================
@@ -238,6 +317,10 @@ void ClearMiddleArea() {
     if (hHistoryTitle) DestroyWindow(hHistoryTitle);
     if (hHistoryList) DestroyWindow(hHistoryList);
     if (hBtnClearHistory) DestroyWindow(hBtnClearHistory);
+    
+    if (hGraphTitle) DestroyWindow(hGraphTitle);
+    if (hComboGraphCat) DestroyWindow(hComboGraphCat);
+    if (hGraphArea) DestroyWindow(hGraphArea);
 }
 
 void ClearDashboard() {
@@ -245,7 +328,7 @@ void ClearDashboard() {
     for (int i=0; i<4; i++) {
         if (hBtnCat[i]) DestroyWindow(hBtnCat[i]);
     }
-    DestroyWindow(hBtnCheckout); DestroyWindow(hBtnProfile); DestroyWindow(hBtnHistory);
+    DestroyWindow(hBtnCheckout); DestroyWindow(hBtnProfile); DestroyWindow(hBtnHistory); DestroyWindow(hBtnGraphs);
     DestroyWindow(hCartList); DestroyWindow(hLblBudget); DestroyWindow(hLblCartTotal);
     DestroyWindow(hCartTitle); DestroyWindow(hBtnClearCart); DestroyWindow(hBtnRemoveItem); DestroyWindow(hBtnLogout);
 }
@@ -285,9 +368,9 @@ void BuildDashboardLayout(HWND hwnd) {
     int screenW = GetSystemMetrics(SM_CXSCREEN);
     int screenH = GetSystemMetrics(SM_CYSCREEN);
     
-    int btnWidth = 130;
+    int btnWidth = 120;
     int spacing = 10;
-    int startX = (screenW - (7 * btnWidth + 6 * spacing)) / 2; 
+    int startX = (screenW - (8 * btnWidth + 7 * spacing)) / 2; 
     int topY = 70; 
     
     hBtnCat[0] = CreateWindow("BUTTON", categories[0].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX, topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_0, NULL, NULL);
@@ -297,6 +380,7 @@ void BuildDashboardLayout(HWND hwnd) {
     hBtnCheckout = CreateWindow("BUTTON", "Checkout", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 4*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CHECKOUT, NULL, NULL);
     hBtnProfile = CreateWindow("BUTTON", "Profile", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 5*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_PROFILE, NULL, NULL);
     hBtnHistory = CreateWindow("BUTTON", "Logs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 6*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_HISTORY, NULL, NULL);
+    hBtnGraphs = CreateWindow("BUTTON", "Graphs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 7*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_GRAPHS, NULL, NULL);
 
     hBtnLogout = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 30, screenH - 120, 100, 40, hwnd, (HMENU)ID_BTN_LOGOUT, NULL, NULL);
 
@@ -403,6 +487,88 @@ void ShowHistoryView(HWND hwnd) {
     }
 }
 
+LRESULT CALLBACK GraphWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+    if (uMsg == WM_PAINT) {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(hwnd, &ps);
+        
+        RECT rc;
+        GetClientRect(hwnd, &rc);
+        
+        // Fill background
+        HBRUSH hBg = CreateSolidBrush(RGB(20, 30, 60));
+        FillRect(hdc, &rc, hBg);
+        DeleteObject(hBg);
+        
+        SetBkMode(hdc, TRANSPARENT);
+        SetTextColor(hdc, RGB(255, 255, 255));
+        TextOut(hdc, 10, 10, "Transactions vs Time (Line Graph)", 33);
+        
+        if (active_user != -1) {
+            // Draw Axes
+            HPEN hAxesPen = CreatePen(PS_SOLID, 1, RGB(200, 200, 200));
+            HPEN hOldPen = (HPEN)SelectObject(hdc, hAxesPen);
+            int w = rc.right;
+            int h = rc.bottom - 40;
+            
+            // Y-axis
+            MoveToEx(hdc, 20, 40, NULL);
+            LineTo(hdc, 20, rc.bottom - 20);
+            
+            // X-axis
+            MoveToEx(hdc, 20, rc.bottom - 20, NULL);
+            LineTo(hdc, w - 20, rc.bottom - 20);
+            
+            // Labels
+            TextOut(hdc, 25, 40, "Price", 5);
+            TextOut(hdc, w - 50, rc.bottom - 20, "Time", 4);
+            SelectObject(hdc, hOldPen);
+            DeleteObject(hAxesPen);
+
+            // Line Graph
+            int h_count = users[active_user].history_count;
+            if (h_count > 0) {
+                int max_amt = 1;
+                for (int i=0; i<h_count; i++) {
+                    if (users[active_user].history[i].amount_spent > max_amt) 
+                        max_amt = users[active_user].history[i].amount_spent;
+                }
+                
+                int stepX = h_count > 1 ? (w - 60) / (h_count - 1) : w/2; // reduced width slightly to not overlap text
+                
+                HPEN hGraphPen = CreatePen(PS_SOLID, 2, RGB(0, 255, 128));
+                hOldPen = (HPEN)SelectObject(hdc, hGraphPen);
+                
+                for (int i=0; i<h_count; i++) {
+                    int x = 20 + i * stepX;
+                    int y = (rc.bottom - 20) - (users[active_user].history[i].amount_spent * h / max_amt);
+                    if (i == 0) MoveToEx(hdc, x, y, NULL);
+                    else LineTo(hdc, x, y);
+                    
+                    Ellipse(hdc, x-3, y-3, x+3, y+3);
+                }
+                SelectObject(hdc, hOldPen);
+                DeleteObject(hGraphPen);
+            } else {
+                TextOut(hdc, rc.right/2 - 50, rc.bottom/2, "No Data", 7);
+            }
+        }
+        
+        EndPaint(hwnd, &ps);
+        return 0;
+    }
+    return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+void ShowGraphView(HWND hwnd) {
+    ClearMiddleArea();
+    int screenW = GetSystemMetrics(SM_CXSCREEN);
+    
+    hGraphTitle = CreateWindow("STATIC", "--- Analytics Dashboard ---", WS_VISIBLE | WS_CHILD | SS_CENTER, (screenW/2)-200, 130, 400, 25, hwnd, NULL, NULL, NULL);
+
+    hGraphArea = CreateWindow("GraphControl", "", WS_VISIBLE | WS_CHILD, (screenW/2)-400, 170, 800, 500, hwnd, NULL, NULL, NULL);
+}
+
 // ==========================================
 // MAIN EVENT HANDLER
 // ==========================================
@@ -499,6 +665,14 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 }
             }
 
+            if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == ID_COMBO_GRAPH_CAT) {
+                int sel = SendMessage(hComboGraphCat, CB_GETCURSEL, 0, 0);
+                if (sel != CB_ERR) {
+                    current_graph_cat_idx = sel;
+                    if (hGraphArea) InvalidateRect(hGraphArea, NULL, TRUE);
+                }
+            }
+
             if (LOWORD(wParam) == ID_BTN_QUIT) {
                 PostQuitMessage(0);
             }
@@ -541,6 +715,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     SendMessage(hCartList, LB_DELETESTRING, sel, 0);
                     for(int i = sel; i < cart_items_count - 1; i++) {
                         cart_item_prices[i] = cart_item_prices[i+1];
+                        cart_item_cat_idx[i] = cart_item_cat_idx[i+1];
+                        cart_item_shop_idx[i] = cart_item_shop_idx[i+1];
                     }
                     cart_items_count--;
                     UpdateFinancialLabels();
@@ -564,6 +740,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
             else if (LOWORD(wParam) == ID_BTN_PROFILE) { ShowProfileView(hwnd); }
             else if (LOWORD(wParam) == ID_BTN_HISTORY) { ShowHistoryView(hwnd); }
+            else if (LOWORD(wParam) == ID_BTN_GRAPHS) { ShowGraphView(hwnd); }
             else if (LOWORD(wParam) == ID_BTN_CLEAR_HISTORY) {
                 if (users[active_user].history_count > 0) {
                     if (MessageBox(hwnd, "Are you sure you want to clear all transaction history?", "Clear History", MB_YESNO | MB_ICONQUESTION) == IDYES) {
@@ -591,6 +768,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 if (strlen(newPass) > 0) { strcpy(users[active_user].password, newPass); }
                 if (strlen(newBudgStr) > 0) { users[active_user].budget = atoi(newBudgStr); }
 
+                save_user_profile(active_user);
                 UpdateFinancialLabels();
                 SetWindowText(hTxtNewPass, ""); 
                 MessageBox(hwnd, "Profile Settings Updated Successfully!", "Success", MB_OK | MB_ICONINFORMATION);
@@ -610,6 +788,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                     if (MessageBox(hwnd, msg, "Checkout", MB_YESNO | MB_ICONQUESTION) == IDYES) {
                         
                         users[active_user].budget -= cart_total; 
+                        save_user_profile(active_user);
                         
                         int h_idx = users[active_user].history_count;
                         if (h_idx < 50) { 
@@ -631,6 +810,11 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                                 fclose(f);
                             }
                         }
+
+                        for(int i=0; i<cart_items_count; i++) {
+                            users[active_user].shop_spent[cart_item_cat_idx[i]][cart_item_shop_idx[i]] += cart_item_prices[i];
+                        }
+                        save_user_stats(active_user);
 
                         cart_total = 0;
                         cart_items_count = 0;
@@ -695,6 +879,8 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 
                         if (cart_items_count < 100) {
                             cart_item_prices[cart_items_count] = total_cost;
+                            cart_item_cat_idx[cart_items_count] = current_cat_idx;
+                            cart_item_shop_idx[cart_items_count] = current_shop_idx;
                             cart_items_count++;
                         }
 
@@ -737,6 +923,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR pCmdLine,
     wc.hbrBackground = hBgBrush; // Apply the dark background to the main window
 
     RegisterClass(&wc);
+
+    WNDCLASS wcGraph = {0};
+    wcGraph.lpfnWndProc = GraphWndProc;
+    wcGraph.hInstance = hInstance;
+    wcGraph.lpszClassName = "GraphControl";
+    wcGraph.hbrBackground = NULL;
+    RegisterClass(&wcGraph);
 
     int screenW = GetSystemMetrics(SM_CXSCREEN);
     int screenH = GetSystemMetrics(SM_CYSCREEN);

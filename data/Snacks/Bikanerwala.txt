@@ -1,0 +1,5 @@
+Kaju Katli,300
+Namkeen Mix,60
+Dhokla,80
+Kachori,25
+Jalebi,100

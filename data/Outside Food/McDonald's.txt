@@ -1,0 +1,5 @@
+McAloo Tikki,50
+McVeggie,100
+French Fries,90
+Chicken McGrill,80
+Coke,60
