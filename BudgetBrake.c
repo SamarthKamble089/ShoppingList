@@ -77,6 +77,7 @@ HBRUSH hInputBrush;  // Slightly lighter blue for text boxes & cart
 #define ID_BTN_CLEAR_HISTORY 31
 #define ID_BTN_GRAPHS      32
 #define ID_COMBO_GRAPH_CAT 33
+#define ID_LIST_HISTORY    34
 
 // ==========================================
 // UI HANDLES
@@ -91,9 +92,13 @@ HWND hCatTitle, hLblShop, hComboShops, hLblSelect, hComboItems, hLblItemName, hT
 int cart_item_prices[100];
 int cart_item_cat_idx[100];
 int cart_item_shop_idx[100];
+char cart_item_names[100][100];
+int cart_item_qtys[100];
+int cart_item_unit_prices[100];
 int cart_items_count = 0;
 HWND hProfTitle, hProfUser, hLblNewPass, hTxtNewPass, hLblNewBudg, hTxtNewBudg, hBtnSaveProf;
-HWND hHistoryTitle, hHistoryList, hBtnClearHistory;
+HWND hHistoryTitle, hHistoryList, hBtnClearHistory, hTxnDetailsTitle, hTxnDetailsList;
+HFONT hMonoFont;
 HWND hGraphTitle, hComboGraphCat, hGraphArea;
 int current_graph_cat_idx = 0;
 
@@ -317,6 +322,8 @@ void ClearMiddleArea() {
     if (hHistoryTitle) DestroyWindow(hHistoryTitle);
     if (hHistoryList) DestroyWindow(hHistoryList);
     if (hBtnClearHistory) DestroyWindow(hBtnClearHistory);
+    if (hTxnDetailsTitle) DestroyWindow(hTxnDetailsTitle);
+    if (hTxnDetailsList) DestroyWindow(hTxnDetailsList);
     
     if (hGraphTitle) DestroyWindow(hGraphTitle);
     if (hComboGraphCat) DestroyWindow(hComboGraphCat);
@@ -472,16 +479,24 @@ void ShowHistoryView(HWND hwnd) {
     ClearMiddleArea();
     int screenW = GetSystemMetrics(SM_CXSCREEN);
 
-    hHistoryTitle = CreateWindow("STATIC", "--- Transaction Logs ---", WS_VISIBLE | WS_CHILD | SS_CENTER, (screenW/2)-200, 150, 400, 25, hwnd, NULL, NULL, NULL);
-    hHistoryList = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL | LBS_NOTIFY, (screenW/2)-250, 200, 500, 250, hwnd, NULL, NULL, NULL);
-    hBtnClearHistory = CreateWindow("BUTTON", "Clear History", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, (screenW/2)-75, 470, 150, 35, hwnd, (HMENU)ID_BTN_CLEAR_HISTORY, NULL, NULL);
+    hHistoryTitle = CreateWindow("STATIC", "--- Transaction Logs ---", WS_VISIBLE | WS_CHILD | SS_CENTER, (screenW/2)-400, 150, 350, 25, hwnd, NULL, NULL, NULL);
+    hHistoryList = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL | LBS_NOTIFY, (screenW/2)-400, 200, 350, 250, hwnd, (HMENU)ID_LIST_HISTORY, NULL, NULL);
+    hBtnClearHistory = CreateWindow("BUTTON", "Clear History", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, (screenW/2)-300, 470, 150, 35, hwnd, (HMENU)ID_BTN_CLEAR_HISTORY, NULL, NULL);
+
+    hTxnDetailsTitle = CreateWindow("STATIC", "Select a transaction to see details", WS_VISIBLE | WS_CHILD | SS_CENTER, (screenW/2), 150, 450, 25, hwnd, NULL, NULL, NULL);
+    hTxnDetailsList = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL | WS_HSCROLL, (screenW/2), 200, 450, 250, hwnd, NULL, NULL, NULL);
+
+    if (!hMonoFont) {
+        hMonoFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH | FF_MODERN, "Consolas");
+    }
+    SendMessage(hTxnDetailsList, WM_SETFONT, (WPARAM)hMonoFont, TRUE);
 
     if (users[active_user].history_count == 0) {
         SendMessage(hHistoryList, LB_ADDSTRING, 0, (LPARAM)"No past transactions found.");
     } else {
         for (int i = 0; i < users[active_user].history_count; i++) {
             char logStr[150];
-            sprintf(logStr, "[ %s ] Checkout Completed: Rs. %d", users[active_user].history[i].date_time, users[active_user].history[i].amount_spent);
+            sprintf(logStr, "[ %s ] Rs. %d", users[active_user].history[i].date_time, users[active_user].history[i].amount_spent);
             SendMessage(hHistoryList, LB_ADDSTRING, 0, (LPARAM)logStr);
         }
     }
@@ -673,6 +688,38 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 }
             }
 
+            if (HIWORD(wParam) == LBN_SELCHANGE && LOWORD(wParam) == ID_LIST_HISTORY) {
+                int sel = SendMessage(hHistoryList, LB_GETCURSEL, 0, 0);
+                if (sel != LB_ERR && sel < users[active_user].history_count) {
+                    SendMessage(hTxnDetailsList, LB_RESETCONTENT, 0, 0);
+                    char header[150];
+                    sprintf(header, "%-20s | %-5s | %-12s | %-12s", "Item Name", "Qty", "Price/Item", "Total Price");
+                    SendMessage(hTxnDetailsList, LB_ADDSTRING, 0, (LPARAM)header);
+                    SendMessage(hTxnDetailsList, LB_ADDSTRING, 0, (LPARAM)"-------------------------------------------------------------");
+
+                    char filepath[100];
+                    sprintf(filepath, "data/txn_details_%s_%d.txt", users[active_user].uname, sel);
+                    FILE *file = fopen(filepath, "r");
+                    if (file) {
+                        char line[200];
+                        while (fgets(line, sizeof(line), file)) {
+                            char iName[100];
+                            int iQty, iUnit, iTotal;
+                            if (sscanf(line, "%[^,],%d,%d,%d", iName, &iQty, &iUnit, &iTotal) == 4) {
+                                char formatted[150];
+                                sprintf(formatted, "%-20.20s | %-5d | Rs. %-8d | Rs. %-8d", iName, iQty, iUnit, iTotal);
+                                SendMessage(hTxnDetailsList, LB_ADDSTRING, 0, (LPARAM)formatted);
+                            }
+                        }
+                        fclose(file);
+                    }
+                    SendMessage(hTxnDetailsList, LB_ADDSTRING, 0, (LPARAM)"-------------------------------------------------------------");
+                    char footer[150];
+                    sprintf(footer, "%-20s   %-5s   %-12s | Rs. %-8d", "", "", "GRAND TOTAL", users[active_user].history[sel].amount_spent);
+                    SendMessage(hTxnDetailsList, LB_ADDSTRING, 0, (LPARAM)footer);
+                }
+            }
+
             if (LOWORD(wParam) == ID_BTN_QUIT) {
                 PostQuitMessage(0);
             }
@@ -809,6 +856,17 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                                 fprintf(f, "%s,%d\n", users[active_user].history[h_idx].date_time, cart_total);
                                 fclose(f);
                             }
+
+                            // Save transaction details
+                            char txnpath[100];
+                            sprintf(txnpath, "data/txn_details_%s_%d.txt", users[active_user].uname, h_idx);
+                            FILE *txnfile = fopen(txnpath, "w");
+                            if (txnfile) {
+                                for(int i=0; i<cart_items_count; i++) {
+                                    fprintf(txnfile, "%s,%d,%d,%d\n", cart_item_names[i], cart_item_qtys[i], cart_item_unit_prices[i], cart_item_prices[i]);
+                                }
+                                fclose(txnfile);
+                            }
                         }
 
                         for(int i=0; i<cart_items_count; i++) {
@@ -878,6 +936,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                         }
 
                         if (cart_items_count < 100) {
+                            strcpy(cart_item_names[cart_items_count], name);
+                            cart_item_qtys[cart_items_count] = qty;
+                            cart_item_unit_prices[cart_items_count] = unit_cost;
                             cart_item_prices[cart_items_count] = total_cost;
                             cart_item_cat_idx[cart_items_count] = current_cat_idx;
                             cart_item_shop_idx[cart_items_count] = current_shop_idx;
@@ -899,6 +960,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
             DeleteObject(hBgBrush);
             DeleteObject(hInputBrush);
             DeleteObject(hTitleFont);
+            if (hMonoFont) DeleteObject(hMonoFont);
             PostQuitMessage(0);
             return 0;
     }
