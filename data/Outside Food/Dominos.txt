@@ -1,5 +1,10 @@
-Dosa,80
-Burger,120
-Pizza,250
-Pasta,150
+Margherita Pizza,199
+Pepperoni Pizza,399
 Garlic Bread,99
+Choco Lava Cake,109
+Pasta,129
+Cheese Burst,299
+Veg Extravaganza,350
+Taco,150
+Wings,180
+Coke,60

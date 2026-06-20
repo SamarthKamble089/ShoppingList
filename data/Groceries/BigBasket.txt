@@ -3,3 +3,9 @@ Potato,30
 Tomato,50
 Carrot,60
 Capsicum,80
+Cabbage,40
+Spinach,30
+Garlic,100
+Ginger,80
+Chili,50
+iuytre,45

@@ -1,5 +1,10 @@
-Onion,50
-Tomato,40
-Rice,120
-Dal,90
+Rice,60
+Wheat,40
 Sugar,45
+Dal,110
+Oil,150
+Salt,20
+Tea,100
+Coffee,200
+Spices,80
+Flour,50

@@ -1,5 +1,0 @@
-Biscuits,30
-Ice Cream,60
-Cake,350
-Puff,25
-Bread,40

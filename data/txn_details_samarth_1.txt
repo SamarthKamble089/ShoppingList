@@ -1,0 +1,3 @@
+Rasgulla,1,150,150
+Chicken Wings,1,150,150
+Tomato,1,50,50

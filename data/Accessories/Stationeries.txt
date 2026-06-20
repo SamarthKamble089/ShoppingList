@@ -1,0 +1,11 @@
+Notebook,50
+Pen Set,100
+Pencils,30
+Eraser,10
+Markers,150
+Scale,20
+Files,80
+Highlighters,90
+Stapler,120
+Glue,40
+A4 Sheets,2

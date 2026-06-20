@@ -3,3 +3,8 @@ Shampoo,150
 Toothpaste,80
 Detergent,120
 Cleaner,90
+Brush,30
+Lotion,200
+Sanitizer,50
+Tissues,40
+Deo,150

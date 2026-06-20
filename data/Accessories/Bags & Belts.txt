@@ -1,0 +1,10 @@
+Leather Belt,999
+Canvas Belt,499
+Backpack,1499
+Laptop Bag,1999
+Sling Bag,899
+Tote Bag,1299
+Wallet,699
+Clutch,599
+Gym Bag,1199
+Duffel Bag,2499

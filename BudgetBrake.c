@@ -32,10 +32,10 @@ struct User {
     int budget;
     struct Log history[50]; 
     int history_count;      
-    int shop_spent[4][10];
+    int shop_spent[5][10];
 };
 
-struct Category categories[4];
+struct Category categories[5];
 struct User users[10];
 
 int active_user = -1;  
@@ -78,6 +78,8 @@ HBRUSH hInputBrush;  // Slightly lighter blue for text boxes & cart
 #define ID_BTN_GRAPHS      32
 #define ID_COMBO_GRAPH_CAT 33
 #define ID_LIST_HISTORY    34
+#define ID_BTN_PRINT_TXN   35
+#define ID_BTN_CAT_4       36
 
 // ==========================================
 // UI HANDLES
@@ -86,7 +88,7 @@ HWND hAppTitle;
 HFONT hTitleFont; 
 
 HWND hLblUser, hUsername, hLblPass, hPass, hBtnLogin, hBtnQuit, hLoginTitle; 
-HWND hBtnCat[4], hBtnCheckout, hBtnProfile, hBtnLogout, hBtnHistory, hBtnGraphs;
+HWND hBtnCat[5], hBtnCheckout, hBtnProfile, hBtnLogout, hBtnHistory, hBtnGraphs;
 HWND hCartList, hLblBudget, hLblCartTotal, hCartTitle, hBtnClearCart, hBtnRemoveItem;
 HWND hCatTitle, hLblShop, hComboShops, hLblSelect, hComboItems, hLblItemName, hTxtItemName, hLblItemPrice, hTxtItemPrice, hLblItemQty, hTxtItemQty, hBtnAddToCart;
 int cart_item_prices[100];
@@ -98,6 +100,7 @@ int cart_item_unit_prices[100];
 int cart_items_count = 0;
 HWND hProfTitle, hProfUser, hLblNewPass, hTxtNewPass, hLblNewBudg, hTxtNewBudg, hBtnSaveProf;
 HWND hHistoryTitle, hHistoryList, hBtnClearHistory, hTxnDetailsTitle, hTxnDetailsList;
+HWND hBtnPrintTxn;
 HFONT hMonoFont;
 HWND hGraphTitle, hComboGraphCat, hGraphArea;
 int current_graph_cat_idx = 0;
@@ -108,15 +111,16 @@ int current_graph_cat_idx = 0;
 void load_categories_from_files() {
     _mkdir("data"); 
     
-    const char* cat_names[4] = {"Groceries", "Clothes", "Snacks", "Outside Food"};
-    const char* default_shops[4][5] = {
+    const char* cat_names[5] = {"Groceries", "Clothes", "Snacks", "Outside Food", "Accessories"};
+    const char* default_shops[5][5] = {
         {"DMart", "Reliance Smart", "BigBasket", "More", "Star Bazaar"},
         {"Puma", "Zudio", "H&M", "Levi's", "Zara"},
         {"Haldiram's", "Bikanerwala", "Sweet Shop", "Local Bakery", "A2B"},
-        {"Dominos", "McDonald's", "KFC", "Local Dhaba", "Taco Bell"}
+        {"Dominos", "McDonald's", "KFC", "Local Dhaba", "Taco Bell"},
+        {"Stationeries", "Jewelers", "Earrings & More", "Watches Hub", "Bags & Belts"}
     };
     
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<5; i++) {
         strcpy(categories[i].name, cat_names[i]);
         categories[i].shop_count = 5;
         
@@ -135,26 +139,31 @@ void load_categories_from_files() {
             if (file == NULL) {
                 file = fopen(filepath, "w");
                 if (file != NULL) {
-                    if (i == 0 && j == 0) fprintf(file, "Rice,60\nWheat,40\nSugar,45\nDal,110\nOil,150\n");
-                    else if (i == 0 && j == 1) fprintf(file, "Apple,120\nBanana,60\nMilk,30\nBread,40\nEggs,60\n");
-                    else if (i == 0 && j == 2) fprintf(file, "Onion,40\nPotato,30\nTomato,50\nCarrot,60\nCapsicum,80\n");
-                    else if (i == 0 && j == 3) fprintf(file, "Soap,40\nShampoo,150\nToothpaste,80\nDetergent,120\nCleaner,90\n");
-                    else if (i == 0 && j == 4) fprintf(file, "Butter,50\nCheese,120\nPaneer,90\nYogurt,30\nIce Cream,150\n");
-                    else if (i == 1 && j == 0) fprintf(file, "Running Shoes,2999\nT-Shirt,999\nTrack Pants,1499\nSocks,399\nGym Bag,1299\n");
-                    else if (i == 1 && j == 1) fprintf(file, "Casual Shirt,499\nJeans,799\nT-Shirt,299\nJacket,999\nSneakers,699\n");
-                    else if (i == 1 && j == 2) fprintf(file, "Hoodie,1999\nChinos,1499\nDress,2499\nSweater,1799\nScarf,499\n");
-                    else if (i == 1 && j == 3) fprintf(file, "Denim Jacket,3499\n501 Jeans,2999\nLogo T-Shirt,1299\nBelt,899\nWallet,999\n");
-                    else if (i == 1 && j == 4) fprintf(file, "Blazer,4999\nTrousers,2499\nPerfume,1299\nFormal Shirt,1999\nBoots,3999\n");
-                    else if (i == 2 && j == 0) fprintf(file, "Aloo Bhujia,50\nMoong Dal,40\nSoan Papdi,120\nRasgulla,150\nSamosa,20\n");
-                    else if (i == 2 && j == 1) fprintf(file, "Kaju Katli,300\nNamkeen Mix,60\nDhokla,80\nKachori,25\nJalebi,100\n");
-                    else if (i == 2 && j == 2) fprintf(file, "Gulab Jamun,100\nBarfi,150\nLadoo,120\nPeda,140\nRasmalai,180\n");
-                    else if (i == 2 && j == 3) fprintf(file, "Veg Puff,20\nChocolate Cake,350\nCream Roll,15\nBreadsticks,40\nMuffins,50\n");
-                    else if (i == 2 && j == 4) fprintf(file, "Murukku,60\nMixture,70\nMysore Pak,200\nThattai,50\nChettinad Snacks,80\n");
-                    else if (i == 3 && j == 0) fprintf(file, "Margherita Pizza,199\nPepperoni Pizza,399\nGarlic Bread,99\nChoco Lava Cake,109\nPasta,129\n");
-                    else if (i == 3 && j == 1) fprintf(file, "McAloo Tikki,50\nMcVeggie,100\nFrench Fries,90\nChicken McGrill,80\nCoke,60\n");
-                    else if (i == 3 && j == 2) fprintf(file, "Zinger Burger,180\nFried Chicken,250\nPopcorn Chicken,120\nChicken Wings,150\nKrushers,90\n");
-                    else if (i == 3 && j == 3) fprintf(file, "Paneer Butter Masala,180\nDal Makhani,150\nButter Naan,40\nChicken Tikka,220\nLassi,60\n");
-                    else if (i == 3 && j == 4) fprintf(file, "Crunchwrap,150\nTacos,100\nBurrito,180\nNachos,120\nQuesadilla,140\n");
+                    if (i == 0 && j == 0) fprintf(file, "Rice,60\nWheat,40\nSugar,45\nDal,110\nOil,150\nSalt,20\nTea,100\nCoffee,200\nSpices,80\nFlour,50\n");
+                    else if (i == 0 && j == 1) fprintf(file, "Apple,120\nBanana,60\nMilk,30\nBread,40\nEggs,60\nCheese,150\nButter,50\nYogurt,40\nJuice,100\nOats,80\n");
+                    else if (i == 0 && j == 2) fprintf(file, "Onion,40\nPotato,30\nTomato,50\nCarrot,60\nCapsicum,80\nCabbage,40\nSpinach,30\nGarlic,100\nGinger,80\nChili,50\n");
+                    else if (i == 0 && j == 3) fprintf(file, "Soap,40\nShampoo,150\nToothpaste,80\nDetergent,120\nCleaner,90\nBrush,30\nLotion,200\nSanitizer,50\nTissues,40\nDeo,150\n");
+                    else if (i == 0 && j == 4) fprintf(file, "Butter,50\nCheese,120\nPaneer,90\nYogurt,30\nIce Cream,150\nMilk,30\nCurd,40\nCream,80\nGhee,250\nChaas,20\n");
+                    else if (i == 1 && j == 0) fprintf(file, "Running Shoes,2999\nT-Shirt,999\nTrack Pants,1499\nSocks,399\nGym Bag,1299\nCap,499\nShorts,899\nJacket,3499\nWristband,199\nBottle,599\n");
+                    else if (i == 1 && j == 1) fprintf(file, "Casual Shirt,499\nJeans,799\nT-Shirt,299\nJacket,999\nSneakers,699\nBelt,199\nWallet,299\nCap,150\nSocks,99\nShorts,399\n");
+                    else if (i == 1 && j == 2) fprintf(file, "Hoodie,1999\nChinos,1499\nDress,2499\nSweater,1799\nScarf,499\nJacket,2999\nJeans,1999\nSkirt,1299\nTop,899\nBoots,3999\n");
+                    else if (i == 1 && j == 3) fprintf(file, "Denim Jacket,3499\n501 Jeans,2999\nLogo T-Shirt,1299\nBelt,899\nWallet,999\nShirt,1999\nShorts,1499\nCap,599\nSneakers,2499\nSocks,399\n");
+                    else if (i == 1 && j == 4) fprintf(file, "Blazer,4999\nTrousers,2499\nPerfume,1299\nFormal Shirt,1999\nBoots,3999\nTie,999\nBelt,1499\nWallet,1999\nSocks,499\nCufflinks,899\n");
+                    else if (i == 2 && j == 0) fprintf(file, "Aloo Bhujia,50\nMoong Dal,40\nSoan Papdi,120\nRasgulla,150\nSamosa,20\nKachori,25\nMathri,60\nNamkeen,80\nLadoo,100\nBarfi,140\n");
+                    else if (i == 2 && j == 1) fprintf(file, "Kaju Katli,300\nNamkeen Mix,60\nDhokla,80\nKachori,25\nJalebi,100\nSamosa,20\nFafda,90\nKhandvi,80\nChaat,50\nLadoo,120\n");
+                    else if (i == 2 && j == 2) fprintf(file, "Gulab Jamun,100\nBarfi,150\nLadoo,120\nPeda,140\nRasmalai,180\nChamcham,160\nSandesh,150\nHalwa,120\nJalebi,90\nRabri,150\n");
+                    else if (i == 2 && j == 3) fprintf(file, "Veg Puff,20\nChocolate Cake,350\nCream Roll,15\nBreadsticks,40\nMuffins,50\nPastry,60\nCookies,80\nDonut,70\nBrownie,90\nCroissant,80\n");
+                    else if (i == 2 && j == 4) fprintf(file, "Murukku,60\nMixture,70\nMysore Pak,200\nThattai,50\nChettinad Snacks,80\nSeedai,90\nRibbon Pakoda,70\nHalwa,150\nLadoo,120\nJangiri,100\n");
+                    else if (i == 3 && j == 0) fprintf(file, "Margherita Pizza,199\nPepperoni Pizza,399\nGarlic Bread,99\nChoco Lava Cake,109\nPasta,129\nCheese Burst,299\nVeg Extravaganza,350\nTaco,150\nWings,180\nCoke,60\n");
+                    else if (i == 3 && j == 1) fprintf(file, "McAloo Tikki,50\nMcVeggie,100\nFrench Fries,90\nChicken McGrill,80\nCoke,60\nMcChicken,120\nWrap,150\nNuggets,140\nFlurry,90\nShake,110\n");
+                    else if (i == 3 && j == 2) fprintf(file, "Zinger Burger,180\nFried Chicken,250\nPopcorn Chicken,120\nChicken Wings,150\nKrushers,90\nWrap,160\nFries,100\nBucket,600\nStrips,180\nMojito,80\n");
+                    else if (i == 3 && j == 3) fprintf(file, "Paneer Butter Masala,180\nDal Makhani,150\nButter Naan,40\nChicken Tikka,220\nLassi,60\nRoti,20\nBiryani,250\nKebab,200\nRajma,120\nJeera Rice,100\n");
+                    else if (i == 3 && j == 4) fprintf(file, "Crunchwrap,150\nTacos,100\nBurrito,180\nNachos,120\nQuesadilla,140\nBowl,160\nChurros,90\nFries,100\nSauce,20\nCoke,60\n");
+                    else if (i == 4 && j == 0) fprintf(file, "Notebook,50\nPen Set,100\nPencils,30\nEraser,10\nMarkers,150\nScale,20\nFiles,80\nHighlighters,90\nStapler,120\nGlue,40\n");
+                    else if (i == 4 && j == 1) fprintf(file, "Gold Ring,5000\nSilver Chain,1500\nPendant,2000\nBracelet,3000\nAnklet,1000\nNose Pin,800\nBangles,4000\nNecklace,8000\nEarrings,2500\nCoin,3500\n");
+                    else if (i == 4 && j == 2) fprintf(file, "Studs,200\nHoops,300\nDanglers,400\nJhumkas,500\nChandbalis,600\nTops,150\nClips,100\nHairband,120\nScrunchie,50\nPin Set,80\n");
+                    else if (i == 4 && j == 3) fprintf(file, "Smartwatch,2999\nAnalog Watch,1499\nDigital Watch,999\nLeather Strap,499\nMetal Band,699\nWall Clock,899\nAlarm Clock,499\nKids Watch,399\nFitness Band,1999\nWatch Box,599\n");
+                    else if (i == 4 && j == 4) fprintf(file, "Leather Belt,999\nCanvas Belt,499\nBackpack,1499\nLaptop Bag,1999\nSling Bag,899\nTote Bag,1299\nWallet,699\nClutch,599\nGym Bag,1199\nDuffel Bag,2499\n");
                     fclose(file);
                     
                     file = fopen(filepath, "r");
@@ -212,7 +221,7 @@ void save_user_stats(int user_idx) {
     sprintf(filepath, "data/shop_stats_%s.txt", users[user_idx].uname);
     FILE *file = fopen(filepath, "w");
     if (file) {
-        for(int c=0; c<4; c++) {
+        for(int c=0; c<5; c++) {
             for(int s=0; s<10; s++) {
                 if (users[user_idx].shop_spent[c][s] > 0) {
                     fprintf(file, "%d,%d,%d\n", c, s, users[user_idx].shop_spent[c][s]);
@@ -225,7 +234,7 @@ void save_user_stats(int user_idx) {
 
 void load_user_stats() {
     for (int i = 0; i < 2; i++) {
-        for (int c=0; c<4; c++) {
+        for (int c=0; c<5; c++) {
             for (int s=0; s<10; s++) {
                 users[i].shop_spent[c][s] = 0;
             }
@@ -238,7 +247,7 @@ void load_user_stats() {
             while (fgets(line, sizeof(line), file)) {
                 int cat, shop, amount;
                 if (sscanf(line, "%d,%d,%d", &cat, &shop, &amount) == 3) {
-                    if (cat >= 0 && cat < 4 && shop >= 0 && shop < 10) {
+                    if (cat >= 0 && cat < 5 && shop >= 0 && shop < 10) {
                         users[i].shop_spent[cat][shop] = amount;
                     }
                 }
@@ -324,6 +333,7 @@ void ClearMiddleArea() {
     if (hBtnClearHistory) DestroyWindow(hBtnClearHistory);
     if (hTxnDetailsTitle) DestroyWindow(hTxnDetailsTitle);
     if (hTxnDetailsList) DestroyWindow(hTxnDetailsList);
+    if (hBtnPrintTxn) DestroyWindow(hBtnPrintTxn);
     
     if (hGraphTitle) DestroyWindow(hGraphTitle);
     if (hComboGraphCat) DestroyWindow(hComboGraphCat);
@@ -332,7 +342,7 @@ void ClearMiddleArea() {
 
 void ClearDashboard() {
     ClearMiddleArea();
-    for (int i=0; i<4; i++) {
+    for (int i=0; i<5; i++) {
         if (hBtnCat[i]) DestroyWindow(hBtnCat[i]);
     }
     DestroyWindow(hBtnCheckout); DestroyWindow(hBtnProfile); DestroyWindow(hBtnHistory); DestroyWindow(hBtnGraphs);
@@ -375,19 +385,20 @@ void BuildDashboardLayout(HWND hwnd) {
     int screenW = GetSystemMetrics(SM_CXSCREEN);
     int screenH = GetSystemMetrics(SM_CYSCREEN);
     
-    int btnWidth = 120;
-    int spacing = 10;
-    int startX = (screenW - (8 * btnWidth + 7 * spacing)) / 2; 
+    int btnWidth = 110;
+    int spacing = 8;
+    int startX = (screenW - (9 * btnWidth + 8 * spacing)) / 2; 
     int topY = 70; 
     
     hBtnCat[0] = CreateWindow("BUTTON", categories[0].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX, topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_0, NULL, NULL);
     hBtnCat[1] = CreateWindow("BUTTON", categories[1].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 1*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_1, NULL, NULL);
     hBtnCat[2] = CreateWindow("BUTTON", categories[2].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 2*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_2, NULL, NULL);
     hBtnCat[3] = CreateWindow("BUTTON", categories[3].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 3*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_3, NULL, NULL);
-    hBtnCheckout = CreateWindow("BUTTON", "Checkout", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 4*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CHECKOUT, NULL, NULL);
-    hBtnProfile = CreateWindow("BUTTON", "Profile", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 5*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_PROFILE, NULL, NULL);
-    hBtnHistory = CreateWindow("BUTTON", "Logs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 6*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_HISTORY, NULL, NULL);
-    hBtnGraphs = CreateWindow("BUTTON", "Graphs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 7*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_GRAPHS, NULL, NULL);
+    hBtnCat[4] = CreateWindow("BUTTON", categories[4].name, WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 4*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CAT_4, NULL, NULL);
+    hBtnCheckout = CreateWindow("BUTTON", "Checkout", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 5*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_CHECKOUT, NULL, NULL);
+    hBtnProfile = CreateWindow("BUTTON", "Profile", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 6*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_PROFILE, NULL, NULL);
+    hBtnHistory = CreateWindow("BUTTON", "Logs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 7*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_HISTORY, NULL, NULL);
+    hBtnGraphs = CreateWindow("BUTTON", "Graphs", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, startX + 8*(btnWidth + spacing), topY, btnWidth, 40, hwnd, (HMENU)ID_BTN_GRAPHS, NULL, NULL);
 
     hBtnLogout = CreateWindow("BUTTON", "Logout", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, 30, screenH - 120, 100, 40, hwnd, (HMENU)ID_BTN_LOGOUT, NULL, NULL);
 
@@ -485,6 +496,7 @@ void ShowHistoryView(HWND hwnd) {
 
     hTxnDetailsTitle = CreateWindow("STATIC", "Select a transaction to see details", WS_VISIBLE | WS_CHILD | SS_CENTER, (screenW/2), 150, 450, 25, hwnd, NULL, NULL, NULL);
     hTxnDetailsList = CreateWindow("LISTBOX", "", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL | WS_HSCROLL, (screenW/2), 200, 450, 250, hwnd, NULL, NULL, NULL);
+    hBtnPrintTxn = CreateWindow("BUTTON", "Print Transaction", WS_VISIBLE | WS_CHILD | BS_OWNERDRAW, (screenW/2) + 150, 470, 150, 35, hwnd, (HMENU)ID_BTN_PRINT_TXN, NULL, NULL);
 
     if (!hMonoFont) {
         hMonoFont = CreateFont(16, 0, 0, 0, FW_NORMAL, FALSE, FALSE, FALSE, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, FIXED_PITCH | FF_MODERN, "Consolas");
@@ -820,10 +832,62 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
                 SetWindowText(hTxtNewPass, ""); 
                 MessageBox(hwnd, "Profile Settings Updated Successfully!", "Success", MB_OK | MB_ICONINFORMATION);
             }
+
+            else if (LOWORD(wParam) == ID_BTN_PRINT_TXN) {
+                int sel = SendMessage(hHistoryList, LB_GETCURSEL, 0, 0);
+                if (sel != LB_ERR && sel < users[active_user].history_count) {
+                    _mkdir("receipts");
+                    char receipt_path[150];
+                    time_t t = time(NULL);
+                    sprintf(receipt_path, "receipts/Receipt_%s_%d_%ld.txt", users[active_user].uname, sel, t);
+                    FILE *fout = fopen(receipt_path, "w");
+                    if (fout) {
+                        fprintf(fout, "========================================================\n");
+                        fprintf(fout, "                    BUDGET BRAKE                        \n");
+                        fprintf(fout, "                  TRANSACTION RECEIPT                   \n");
+                        fprintf(fout, "========================================================\n");
+                        fprintf(fout, "User: %s\n", users[active_user].uname);
+                        fprintf(fout, "Date: %s\n", users[active_user].history[sel].date_time);
+                        fprintf(fout, "--------------------------------------------------------\n");
+                        fprintf(fout, "%-20s | %-5s | %-10s | %-10s\n", "Item", "Qty", "Unit Rs", "Total Rs");
+                        fprintf(fout, "--------------------------------------------------------\n");
+                        
+                        char filepath[100];
+                        sprintf(filepath, "data/txn_details_%s_%d.txt", users[active_user].uname, sel);
+                        FILE *fin = fopen(filepath, "r");
+                        if (fin) {
+                            char line[200];
+                            while (fgets(line, sizeof(line), fin)) {
+                                char iName[100];
+                                int iQty, iUnit, iTotal;
+                                if (sscanf(line, "%[^,],%d,%d,%d", iName, &iQty, &iUnit, &iTotal) == 4) {
+                                    fprintf(fout, "%-20.20s | %-5d | %-10d | %-10d\n", iName, iQty, iUnit, iTotal);
+                                }
+                            }
+                            fclose(fin);
+                        }
+                        fprintf(fout, "--------------------------------------------------------\n");
+                        fprintf(fout, "%-20s   %-5s   %-10s | %-10d\n", "", "", "GRAND TOTAL:", users[active_user].history[sel].amount_spent);
+                        fprintf(fout, "========================================================\n");
+                        fclose(fout);
+                        
+                        char msg[200];
+                        sprintf(msg, "Transaction printed successfully!\nSaved to: %s", receipt_path);
+                        MessageBox(hwnd, msg, "Success", MB_OK | MB_ICONINFORMATION);
+                    } else {
+                        MessageBox(hwnd, "Failed to write receipt file.", "Error", MB_OK | MB_ICONERROR);
+                    }
+                } else {
+                    MessageBox(hwnd, "Please select a transaction from the list first.", "Print Transaction", MB_OK);
+                }
+            }
             
             else if (LOWORD(wParam) >= ID_BTN_CAT_0 && LOWORD(wParam) <= ID_BTN_CAT_3) {
                 int selected_cat = LOWORD(wParam) - ID_BTN_CAT_0; 
                 ShowCategoryView(hwnd, selected_cat);
+            }
+            else if (LOWORD(wParam) == ID_BTN_CAT_4) {
+                ShowCategoryView(hwnd, 4);
             }
             
             else if (LOWORD(wParam) == ID_BTN_CHECKOUT) {

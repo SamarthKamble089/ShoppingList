@@ -3,3 +3,9 @@ Chocolate Cake,350
 Cream Roll,15
 Breadsticks,40
 Muffins,50
+Pastry,60
+Cookies,80
+Donut,70
+Brownie,90
+Croissant,80
+Veg Roll,80

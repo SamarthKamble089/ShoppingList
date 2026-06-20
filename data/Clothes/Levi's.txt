@@ -3,3 +3,8 @@ Denim Jacket,3499
 Logo T-Shirt,1299
 Belt,899
 Wallet,999
+Shirt,1999
+Shorts,1499
+Cap,599
+Sneakers,2499
+Socks,399

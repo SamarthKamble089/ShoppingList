@@ -1,5 +1,10 @@
-T-Shirt,499
-Shoes,2499
-Trackpants,799
-Socks,99
-Jacket,1499
+Running Shoes,2999
+T-Shirt,999
+Track Pants,1499
+Socks,399
+Gym Bag,1299
+Cap,499
+Shorts,899
+Jacket,3499
+Wristband,199
+Bottle,599

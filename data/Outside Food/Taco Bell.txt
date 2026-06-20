@@ -3,3 +3,8 @@ Tacos,100
 Burrito,180
 Nachos,120
 Quesadilla,140
+Bowl,160
+Churros,90
+Fries,100
+Sauce,20
+Coke,60

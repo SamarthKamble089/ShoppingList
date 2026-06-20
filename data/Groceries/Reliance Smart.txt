@@ -1,5 +1,10 @@
-Potato,30
-Milk,50
-Bread,45
-Butter,55
-Cheese,120
+Apple,120
+Banana,60
+Milk,30
+Bread,40
+Eggs,60
+Cheese,150
+Butter,50
+Yogurt,40
+Juice,100
+Oats,80

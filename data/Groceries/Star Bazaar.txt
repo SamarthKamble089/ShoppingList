@@ -3,3 +3,8 @@ Cheese,120
 Paneer,90
 Yogurt,30
 Ice Cream,150
+Milk,30
+Curd,40
+Cream,80
+Ghee,250
+Chaas,20

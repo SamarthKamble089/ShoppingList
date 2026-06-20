@@ -1,5 +1,10 @@
-Chocolate,45
-Chips,20
-Ladoo,150
-Barfi,200
-Jalebi,60
+Gulab Jamun,100
+Barfi,150
+Ladoo,120
+Peda,140
+Rasmalai,180
+Chamcham,160
+Sandesh,150
+Halwa,120
+Jalebi,90
+Rabri,150

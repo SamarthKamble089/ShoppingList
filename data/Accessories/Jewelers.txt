@@ -1,0 +1,10 @@
+Gold Ring,5000
+Silver Chain,1500
+Pendant,2000
+Bracelet,3000
+Anklet,1000
+Nose Pin,800
+Bangles,4000
+Necklace,8000
+Earrings,2500
+Coin,3500

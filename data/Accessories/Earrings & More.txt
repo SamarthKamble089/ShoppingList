@@ -1,0 +1,10 @@
+Studs,200
+Hoops,300
+Danglers,400
+Jhumkas,500
+Chandbalis,600
+Tops,150
+Clips,100
+Hairband,120
+Scrunchie,50
+Pin Set,80

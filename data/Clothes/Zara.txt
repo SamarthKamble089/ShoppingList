@@ -3,3 +3,8 @@ Trousers,2499
 Perfume,1299
 Formal Shirt,1999
 Boots,3999
+Tie,999
+Belt,1499
+Wallet,1999
+Socks,499
+Cufflinks,899

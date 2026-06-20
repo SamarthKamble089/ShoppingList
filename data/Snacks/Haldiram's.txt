@@ -3,3 +3,8 @@ Moong Dal,40
 Soan Papdi,120
 Rasgulla,150
 Samosa,20
+Kachori,25
+Mathri,60
+Namkeen,80
+Ladoo,100
+Barfi,140

@@ -3,3 +3,8 @@ Fried Chicken,250
 Popcorn Chicken,120
 Chicken Wings,150
 Krushers,90
+Wrap,160
+Fries,100
+Bucket,600
+Strips,180
+Mojito,80

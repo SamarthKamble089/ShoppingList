@@ -3,3 +3,8 @@ Mixture,70
 Mysore Pak,200
 Thattai,50
 Chettinad Snacks,80
+Seedai,90
+Ribbon Pakoda,70
+Halwa,150
+Ladoo,120
+Jangiri,100

@@ -1,5 +1,10 @@
-Jeans,999
-Jacket,1999
-Dress,1499
-T-Shirt,399
-Shorts,499
+Casual Shirt,499
+Jeans,799
+T-Shirt,299
+Jacket,999
+Sneakers,699
+Belt,199
+Wallet,299
+Cap,150
+Socks,99
+Shorts,399

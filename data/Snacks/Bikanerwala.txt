@@ -3,3 +3,8 @@ Namkeen Mix,60
 Dhokla,80
 Kachori,25
 Jalebi,100
+Samosa,20
+Fafda,90
+Khandvi,80
+Chaat,50
+Ladoo,120

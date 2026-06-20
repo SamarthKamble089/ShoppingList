@@ -3,3 +3,8 @@ Chinos,1499
 Dress,2499
 Sweater,1799
 Scarf,499
+Jacket,2999
+Jeans,1999
+Skirt,1299
+Top,899
+Boots,3999

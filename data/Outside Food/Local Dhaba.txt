@@ -1,5 +1,10 @@
-Biriyani,250
-Chapati,20
-Paneer,180
-Chicken Curry,200
-Lassi,50
+Paneer Butter Masala,180
+Dal Makhani,150
+Butter Naan,40
+Chicken Tikka,220
+Lassi,60
+Roti,20
+Biryani,250
+Kebab,200
+Rajma,120
+Jeera Rice,100

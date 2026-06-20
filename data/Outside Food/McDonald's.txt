@@ -3,3 +3,8 @@ McVeggie,100
 French Fries,90
 Chicken McGrill,80
 Coke,60
+McChicken,120
+Wrap,150
+Nuggets,140
+Flurry,90
+Shake,110
