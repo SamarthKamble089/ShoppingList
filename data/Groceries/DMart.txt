@@ -8,3 +8,4 @@ Tea,100
 Coffee,200
 Spices,80
 Flour,50
+Berry,52
